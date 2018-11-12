@@ -1,3 +1,4 @@
+#anp4hb & sk8wt
 
 from __future__ import print_function
 
@@ -28,7 +29,6 @@ class TabQAgent(object):
         self.epsilon = 0.05  # exploration rate
         self.alpha = 0.2     # learning rate
         self.gamma = 0.8  # reward discount factor
-
         self.logger = logging.getLogger(__name__)
         if False:  # True if you want to see more information
             self.logger.setLevel(logging.DEBUG)
@@ -36,9 +36,6 @@ class TabQAgent(object):
             self.logger.setLevel(logging.INFO)
         self.logger.handlers = []
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
-        
-
-
         self.actions = ["movenorth 1", "movesouth 1", "movewest 1", "moveeast 1"]
         self.q_table = {}
         self.canvas = None
@@ -49,38 +46,33 @@ class TabQAgent(object):
     # Output: updated q_table
     def updateQTable(self, reward, current_state, prev_state, prev_a):
         
-
+        #writing the qtable formula we got from class
         bestOption = max(self.q_table[current_state])
-
         current_learning = self.alpha * (reward + (self.gamma * bestOption))
         previous_learning = (1-self.alpha) * (self.q_table[prev_state][prev_a])
+        
         self.q_table[prev_state][prev_a] = current_learning + previous_learning
 
-        
-
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
         return
+
     ### Change q_table to reflect what we have learnt upon reaching the terminal state.
     # Input: reward - int, prev_state - coordinate tuple, prev_a - int
     # Output: updated q_table
     def updateQTableFromTerminatingState(self, reward, prev_state, prev_a):
+
+        #assigning final values to states depending on if it leads us to death or victory
         if reward <= -100:
             self.q_table[prev_state][prev_a] = -100
 
         if reward > 0:
             self.q_table[prev_state][prev_a] = 100
 
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-
-
         return
 
 
     def act(self, world_state, agent_host, current_r):
+
+        #functions imported from proj2 that move the agent around
         def moveRight(ah):
             ah.sendCommand("strafe 1")
             time.sleep(0.05)
@@ -113,8 +105,7 @@ class TabQAgent(object):
                 listOfLegalMoves.append("right")
             return listOfLegalMoves
 
-                    ### YOUR CODE HERE ###
-
+        #dictionary logic used to move the agent around
         moveCommands = {"up": [moveStraight, 0], "down":[moveBack, 1], "left":[moveLeft, 2], "right":[moveRight, 3]}
         moveCommandsList = [moveStraight, moveBack, moveLeft, moveRight]
         
@@ -142,19 +133,7 @@ class TabQAgent(object):
         
         legalList = legalMoves(xcoord, ycoord)
 
-        
-        
-        
-        #if self.prev_a==
-        # select the next action (find a s.t. self.actions[a] == next action)
-
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-
-       
-        
-
-
+        #agent executes a completely random move 5% of the time to ensure accuracy
         if random.random() <= 0.05:
             randomMove = legalList[random.randint(0, len(legalList)-1)]
             self.prev_a = moveCommands[randomMove][1]
@@ -162,14 +141,20 @@ class TabQAgent(object):
 
             moveCommands[randomMove][0](agent_host)
 
+        #finding the best q-value score in the 4 possible directions
         else:
-            #slight optimization:
-            #remove the opposite of the previous action from the list of legal moves so that the agent doesn't
-            #immediately move back to the previous state.
-            #before the agent finds a reward, all state-action pairs that don't lead to death have a q-score of 0. 
-            #the agent chooses randomly among all maximal q scores, so before a reward is found, at every state, 
-            #one of the maximal state-action pairs includes going back to the old square. we removed that as a legal option
-            #to speed up the rate of exploration. 
+
+            '''
+            slight optimizations TODO:
+            remove the opposite of the previous action from the list of legal moves so that the agent doesn't
+            immediately move back to the previous state.
+            before the agent finds a reward, all state-action pairs that don't lead to death have a q-score of 0. 
+            the agent chooses randomly among all maximal q scores, so before a reward is found, at every state, 
+            one of the maximal state-action pairs includes going back to the old square. we removed that as a legal option
+            to speed up the rate of exploration. 
+            '''
+            
+            #ensures the agent can't take the same step
             if(self.prev_a == 0 and "down" in legalList):
                 legalList.remove("down")
             if(self.prev_a == 1 and "up" in legalList):
@@ -178,9 +163,6 @@ class TabQAgent(object):
                 legalList.remove("right")
             if(self.prev_a == 3 and "left" in legalList):
                 legalList.remove("left")
-            
-
-
 
             #populates 'indices' with indices of all max q scores
             value = max(self.q_table[current_s])
@@ -193,27 +175,7 @@ class TabQAgent(object):
             self.prev_a = randomBest
             self.prev_s = current_s 
 
-
             moveCommandsList[randomBest](agent_host)
-        
-
-        """
-        if(current_s=="4:1"):
-            moveRight(agent_host)
-        if("up" in legalList):
-            moveStraight(agent_host)
-
-
-        print("printing current_s")
-        print(current_s)
-        """
-        # try to send the selected action to agent, only update prev_s if this succeeds
-
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-                    ### YOUR CODE HERE ###
-
-
 
         return current_r
 
@@ -282,7 +244,6 @@ class TabQAgent(object):
             self.updateQTableFromTerminatingState(current_r, self.prev_s, self.prev_a)
 
         # used to dynamically draw the QTable in a separate window
-        print("self.q_table", self.q_table)
         self.drawQ()
 
         return total_reward
